@@ -40,9 +40,9 @@ next_version=$((next_version + 1))
 
 unregister "$product"
 rm -rf "$product"
-if [[ ! -f dist/AppIcon.icns || scripts/make-icon.swift -nt dist/AppIcon.icns ]]; then
+if [[ ! -f dist/AppIcon.icns || artwork/AppIcon.png -nt dist/AppIcon.icns || scripts/make-icon.swift -nt dist/AppIcon.icns ]]; then
     mkdir -p dist
-    swift scripts/make-icon.swift "$PWD/dist"
+    swift scripts/make-icon.swift "$PWD/dist" "$PWD/artwork/AppIcon.png"
     iconutil -c icns dist/AppIcon.iconset -o dist/AppIcon.icns
 fi
 
@@ -52,6 +52,7 @@ xcodebuild -quiet -workspace Bart.xcworkspace -scheme Bart \
     -derivedDataPath "$PWD/.build/xcode-derived" CODE_SIGNING_ALLOWED=NO build
 
 /usr/libexec/PlistBuddy -c "Set :CFBundleVersion $next_version" "$product/Contents/Info.plist"
+/usr/libexec/PlistBuddy -c "Set :BartBuildChannel ${BART_BUILD_CHANNEL:-development}" "$product/Contents/Info.plist"
 /usr/libexec/PlistBuddy -c "Set :CFBundleVersion $next_version" "$product/$widget/Contents/Info.plist"
 # Sign inside-out: Sparkle's helpers, then the widget, then the app.
 codesign --force --sign "$identity" "$product/$sparkle/XPCServices/Installer.xpc"

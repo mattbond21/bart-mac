@@ -7,7 +7,7 @@ let package = Package(
     products: [.executable(name: "Bart", targets: ["Bart"])],
     dependencies: [.package(url: "https://github.com/sparkle-project/Sparkle", from: "2.6.0")],
     targets: [
-        .executableTarget(name: "Bart", dependencies: [.product(name: "Sparkle", package: "Sparkle")]),
+        .executableTarget(name: "Bart", dependencies: [.product(name: "Sparkle", package: "Sparkle")], resources: [.process("Resources")]),
         .testTarget(name: "BartTests", dependencies: ["Bart"])
     ]
 )

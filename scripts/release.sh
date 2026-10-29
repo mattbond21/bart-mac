@@ -26,19 +26,14 @@ fi
 for plist in Configuration/Bart-Info.plist Configuration/BartWidget-Info.plist; do
     /usr/libexec/PlistBuddy -c "Set :CFBundleShortVersionString $version" "$plist"
 done
-./scripts/build-app.sh
+BART_BUILD_CHANNEL=release ./scripts/build-app.sh
 build=$(/usr/libexec/PlistBuddy -c 'Print :CFBundleVersion' "$product/Contents/Info.plist")
 # Record the build number so the next release, from any Mac, numbers above it.
 for plist in Configuration/Bart-Info.plist Configuration/BartWidget-Info.plist; do
     /usr/libexec/PlistBuddy -c "Set :CFBundleVersion $build" "$plist"
 done
 
-staging=$(mktemp -d)
-trap 'rm -rf "$staging"' EXIT
-ditto "$product" "$staging/Bart.app"
-ln -s /Applications "$staging/Applications"
-rm -f "$dmg"
-hdiutil create -quiet -volname Bart -srcfolder "$staging" -fs HFS+ -format UDZO "$dmg"
+./scripts/package-dmg.sh "$product" "$dmg"
 
 signature=$("$sign_update" "$dmg")
 cat > "$appcast" <<EOF

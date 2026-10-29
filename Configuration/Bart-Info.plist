@@ -4,6 +4,8 @@
 <dict>
 	<key>BARTAppGroup</key>
 	<string>5ERD8L276B.com.mattbond.bart.shared</string>
+	<key>BartBuildChannel</key>
+	<string>development</string>
 	<key>CFBundleDisplayName</key>
 	<string>Bart</string>
 	<key>CFBundleExecutable</key>

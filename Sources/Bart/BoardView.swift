@@ -62,6 +62,8 @@ struct BoardView: View {
                         Button("Add a desktop widget…") { openSettings() }
                         Button("Check for Updates…", action: checkForUpdates)
                         Divider()
+                        Button("Bart \(BartBuild.versionLabel) · \(BartBuild.channelLabel)") {}
+                            .disabled(true)
                         Link("BART website", destination: URL(string: "https://www.bart.gov")!)
                         Button("Quit Bart") { NSApp.terminate(nil) }.keyboardShortcut("q", modifiers: .command)
                     } label: {

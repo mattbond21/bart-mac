@@ -1,0 +1,11 @@
+files = [defines["app"]]
+symlinks = {"Applications": "/Applications"}
+background = defines["background"]
+format = "UDZO"
+window_rect = ((120, 120), (660, 420))
+icon_locations = {"Bart.app": (170, 235), "Applications": (490, 235)}
+icon_size = 96
+text_size = 13
+default_view = "icon-view"
+show_toolbar = False
+show_status_bar = False

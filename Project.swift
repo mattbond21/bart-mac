@@ -14,7 +14,7 @@ let project = Project(
             deploymentTargets: .macOS("14.0"),
             infoPlist: .file(path: "Configuration/Bart-Info.plist"),
             sources: ["Sources/Bart/**"],
-            resources: ["dist/AppIcon.icns"],
+            resources: ["dist/AppIcon.icns", "Sources/Bart/Resources/**"],
             entitlements: .file(path: "Configuration/Bart.entitlements"),
             dependencies: [.target(name: "BartWidget"), .package(product: "Sparkle")],
             settings: .settings(base: ["SWIFT_VERSION": "5.0", "CODE_SIGNING_ALLOWED": "NO"])

@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" fill="none" aria-label="Front-facing train">
+  <path fill="#111827" fill-rule="evenodd" d="
+    M38 12h52c13 0 22 10 22 23v56c0 12-9 21-21 21H37c-12 0-21-9-21-21V35c0-13 9-23 22-23Z
+    M47.5 22h33a3.5 3.5 0 0 1 0 7h-33a3.5 3.5 0 0 1 0-7Z
+    M33 40h22a5 5 0 0 1 5 5v27a5 5 0 0 1-5 5H33a5 5 0 0 1-5-5V45a5 5 0 0 1 5-5Z
+    M73 40h22a5 5 0 0 1 5 5v27a5 5 0 0 1-5 5H73a5 5 0 0 1-5-5V45a5 5 0 0 1 5-5Z
+    M40 85a6 6 0 1 0 0 12a6 6 0 1 0 0-12Z
+    M88 85a6 6 0 1 0 0 12a6 6 0 1 0 0-12Z"/>
+  <path fill="#111827" d="M38 105h9l-18 21h-9l18-21Zm43 0h9l18 21h-9l-18-21ZM29 116h70v7H29v-7Z"/>
+</svg>

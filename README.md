@@ -6,7 +6,7 @@ Bart is a small Mac app that tells you when your next BART train leaves. It live
   <img src="docs/images/popover.png" width="430" alt="Bart's menu bar window, showing three upcoming trains from Orinda to Montgomery with times, ride length and delays">
 </p>
 
-Requires macOS 14 or later. You don't need a BART account or any setup.
+Requires macOS 14 or later. You don't need a BART account.
 
 ## Install
 
@@ -16,7 +16,7 @@ Requires macOS 14 or later. You don't need a BART account or any setup.
    - Open **System Settings → Privacy & Security**, scroll down, and click **Open Anyway** next to the message about Bart.
    - Or run this once in Terminal: `xattr -dr com.apple.quarantine /Applications/Bart.app`
 
-You only need to do this the first time. A train icon then appears in your menu bar.
+You only need to do this the first time. On first launch, choose your Home and Work stations and whether Bart should open when you log in. A train icon then appears in your menu bar.
 
 ## Using Bart
 
@@ -31,7 +31,7 @@ All times are Pacific time.
 
 ### Change your stations
 
-Click the **gear → Settings…**, pick your **Work** and **Home** stations from the full list of 50 BART stations, then click **Save stations**. The defaults are Montgomery and Orinda. You can also turn on **Launch at login** here.
+Click the **gear → Settings…**, pick your **Work** and **Home** stations from the full list of 50 BART stations, then click **Save stations**. The defaults are Montgomery and Orinda. You can also change **Launch at login** here.
 
 Bart only shows direct trains. If your trip needs a transfer, it tells you so and links to BART's trip planner.
 
@@ -56,6 +56,8 @@ The widget follows the same stations and direction as the menu bar app, and keep
 
 Bart checks for new versions automatically and asks before installing one. To check yourself, click the **gear → Check for Updates…**.
 
+The gear menu and **Settings → About** show the version, build number, and whether this is a **Development** or **Release** build. Builds made with `build-app.sh` are Development; packages published with `release.sh` are Release.
+
 ## Where the data comes from
 
 Bart reads BART's public feeds directly. Nothing is sent anywhere else.
@@ -78,6 +80,10 @@ swift test                           # run the tests
 ```
 
 `build-app.sh` generates the Xcode project with Tuist, builds the app and its WidgetKit extension, signs Sparkle's helper tools, then the widget, then the app, and gives each build a new build number. With `--install` it replaces `~/Applications/Bart.app`, registers the widget and relaunches the app. The widget has to be built as a real Xcode app extension; compiling it with `swiftc` produces an extension that macOS won't load.
+
+`scripts/package-dmg.sh` makes the drag-to-Applications installer window, including its background and icon layout. It creates a Python environment in `.build/dmg-tools` with the pinned dependencies in `scripts/dmg-requirements.txt`. To preview it without publishing a release, run `./scripts/package-dmg.sh .build/xcode-derived/Build/Products/Release/Bart.app dist/Bart-preview.dmg`.
+
+The app icon comes from `artwork/AppIcon.png`. The build uses `scripts/make-icon.swift` to generate each macOS icon size and packages them into `dist/AppIcon.icns`. To replace the icon, update the source PNG; a 1024 × 1024 px sRGB image with transparency is preferred.
 
 Builds are signed with the Apple Development certificate for team `5ERD8L276B`, and the app and widget share a team-prefixed app group (`5ERD8L276B.com.mattbond.bart.shared`). To build under a different team, change the team and app group in both `Configuration/*.entitlements`, the `BARTAppGroup` value in `Configuration/Bart-Info.plist` and the fallback in `SharedBoard.swift`, and set `BART_SIGNING_IDENTITY` to your signing identity.
 

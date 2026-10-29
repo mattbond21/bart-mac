@@ -23,13 +23,24 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSPopoverDelegate {
     private var subscription: AnyCancellable?
     private var wakeObserver: NSObjectProtocol?
     private var settingsWindow: NSWindow?
+    private var onboardingWindow: NSWindow?
     private let updater = SPUStandardUpdaterController(startingUpdater: true, updaterDelegate: nil, userDriverDelegate: nil)
 
     func applicationDidFinishLaunching(_ notification: Notification) {
         status = NSStatusBar.system.statusItem(withLength: NSStatusItem.squareLength)
         if let button = status.button {
-            let image = NSImage(systemSymbolName: "tram.fill", accessibilityDescription: "Bart")
-            image?.isTemplate = true
+            #if SWIFT_PACKAGE
+            let resourceBundle = Bundle.module
+            #else
+            let resourceBundle = Bundle.main
+            #endif
+            guard let iconURL = resourceBundle.url(forResource: "MenuBarIcon", withExtension: "png"),
+                  let image = NSImage(contentsOf: iconURL) else {
+                fatalError("Missing menu bar icon resource")
+            }
+            image.size = NSSize(width: 18, height: 18)
+            image.isTemplate = true
+            image.accessibilityDescription = "Bart"
             button.image = image
             button.imagePosition = .imageOnly
             button.title = ""
@@ -72,17 +83,18 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSPopoverDelegate {
             }
         } else {
             store.start()
-            let firstLaunch = !UserDefaults.standard.bool(forKey: "hasLaunched")
+            let needsOnboarding = !UserDefaults.standard.bool(forKey: "hasCompletedOnboarding")
             let version = Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "development"
             let updated = UserDefaults.standard.string(forKey: "lastSeenVersion") != version
-            UserDefaults.standard.set(true, forKey: "hasLaunched")
             UserDefaults.standard.set(version, forKey: "lastSeenVersion")
-            if arguments.contains("--show") || firstLaunch || updated { togglePopover() }
+            if needsOnboarding || arguments.contains("--show-onboarding") { showOnboarding() }
+            else if arguments.contains("--show") || updated { togglePopover() }
         }
     }
 
     func applicationShouldHandleReopen(_ sender: NSApplication, hasVisibleWindows flag: Bool) -> Bool {
-        if !popover.isShown { togglePopover() }
+        if !UserDefaults.standard.bool(forKey: "hasCompletedOnboarding") { showOnboarding() }
+        else if !popover.isShown { togglePopover() }
         return false
     }
 
@@ -95,6 +107,10 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSPopoverDelegate {
             let menu = NSMenu()
             menu.addItem(withTitle: "Quit Bart", action: #selector(quit), keyEquivalent: "q").target = self
             status.menu = menu; status.button?.performClick(nil); status.menu = nil
+            return
+        }
+        if !UserDefaults.standard.bool(forKey: "hasCompletedOnboarding") {
+            showOnboarding()
             return
         }
         if popover.isShown { popover.performClose(nil) }
@@ -128,16 +144,73 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSPopoverDelegate {
         settingsWindow?.makeKeyAndOrderFront(nil)
     }
 
+    private func showOnboarding() {
+        if onboardingWindow == nil {
+            let window = NSWindow(contentRect: NSRect(x: 0, y: 0, width: 460, height: 310), styleMask: [.titled, .closable, .fullSizeContentView], backing: .buffered, defer: false)
+            window.title = "Welcome to Bart"
+            window.titleVisibility = .hidden
+            window.titlebarSeparatorStyle = .none
+            window.isReleasedWhenClosed = false
+            window.isOpaque = false
+            window.backgroundColor = .clear
+            window.titlebarAppearsTransparent = true
+
+            let bounds = window.contentView?.bounds ?? NSRect(x: 0, y: 0, width: 460, height: 310)
+            let background: NSView
+            let contentContainer: NSView
+            if #available(macOS 26.0, *) {
+                let glass = NSGlassEffectView(frame: bounds)
+                glass.style = .regular
+                glass.cornerRadius = 0
+                let container = NSView(frame: bounds)
+                container.autoresizingMask = [.width, .height]
+                glass.contentView = container
+                background = glass
+                contentContainer = container
+            } else {
+                let material = NSVisualEffectView(frame: bounds)
+                material.material = .popover
+                material.blendingMode = .behindWindow
+                material.state = .active
+                background = material
+                contentContainer = material
+            }
+            background.autoresizingMask = [.width, .height]
+            let content = NSHostingView(rootView: OnboardingView(store: store) { [weak self] in
+                self?.onboardingWindow?.close()
+                self?.togglePopover()
+            })
+            content.translatesAutoresizingMaskIntoConstraints = false
+            contentContainer.addSubview(content)
+            window.contentView = background
+            let contentTop = (window.contentLayoutGuide as? NSLayoutGuide)?.topAnchor ?? contentContainer.topAnchor
+            NSLayoutConstraint.activate([
+                content.leadingAnchor.constraint(equalTo: contentContainer.leadingAnchor),
+                content.trailingAnchor.constraint(equalTo: contentContainer.trailingAnchor),
+                content.bottomAnchor.constraint(equalTo: contentContainer.bottomAnchor),
+                content.topAnchor.constraint(equalTo: contentTop),
+            ])
+            window.center()
+            onboardingWindow = window
+        }
+        NSApp.activate(ignoringOtherApps: true)
+        onboardingWindow?.makeKeyAndOrderFront(nil)
+    }
+
     func application(_ application: NSApplication, open urls: [URL]) {
         if urls.contains(where: { $0.scheme == "bartmac" }), !popover.isShown { togglePopover() }
     }
 
     private func snapshot(path: String) async {
         let isSettings = CommandLine.arguments.contains("--snapshot-settings")
-        let content = isSettings ? AnyView(SettingsView(store: store)) : AnyView(BoardView(store: store))
+        let isOnboarding = CommandLine.arguments.contains("--snapshot-onboarding")
+        let content: AnyView
+        if isOnboarding { content = AnyView(OnboardingView(store: store, onComplete: {})) }
+        else if isSettings { content = AnyView(SettingsView(store: store)) }
+        else { content = AnyView(BoardView(store: store)) }
         let view = NSHostingView(rootView: content)
         if CommandLine.arguments.contains("--dark") { view.appearance = NSAppearance(named: .darkAqua) }
-        let size = isSettings ? NSSize(width: 480, height: 585) : boardSize
+        let size = isOnboarding ? NSSize(width: 460, height: 310) : (isSettings ? NSSize(width: 480, height: 585) : boardSize)
         let window = NSWindow(contentRect: NSRect(origin: NSPoint(x: -2000, y: 0), size: size), styleMask: [.borderless], backing: .buffered, defer: false)
         window.contentView = view
         window.layoutIfNeeded()

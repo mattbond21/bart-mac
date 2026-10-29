@@ -52,6 +52,10 @@ struct SettingsView: View {
                 Text("All times are Pacific. The menu bar checks BART every 30 seconds.")
                     .font(.caption).foregroundStyle(.secondary)
             }
+            Section("About") {
+                LabeledContent("Version", value: BartBuild.versionLabel)
+                LabeledContent("Build", value: BartBuild.channelLabel)
+            }
         }
         .formStyle(.grouped)
         .frame(width: 480, height: 585)
