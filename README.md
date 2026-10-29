@@ -38,9 +38,12 @@ Bart only shows direct trains. If your trip needs a transfer, it tells you so an
 ## Desktop widget
 
 <p>
-  <img src="docs/images/widget-small.png" height="164" alt="Small widget showing the next train">
-  <img src="docs/images/widget-medium.png" height="164" alt="Medium widget showing three trains">
-  <img src="docs/images/widget-medium-dark.png" height="164" alt="Medium widget in dark mode">
+  <img src="docs/images/widget-small.png" height="164" alt="Small widget showing the next train, when it arrives, and its delay">
+  <img src="docs/images/widget-medium.png" height="164" alt="Medium widget showing the next three trains with countdowns and delays">
+</p>
+<p>
+  <img src="docs/images/widget-large.png" width="344" alt="Large widget showing three journey cards, matching the menu bar app">
+  <img src="docs/images/widget-large-dark.png" width="344" alt="Large widget in dark mode">
 </p>
 
 1. Control-click the desktop and choose **Edit Widgets**.

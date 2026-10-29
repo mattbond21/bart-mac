@@ -231,64 +231,13 @@ struct JourneyCard: View {
 
     private var content: some View {
         VStack(spacing: 0) {
-                HStack(alignment: .center, spacing: 8) {
-                    Text(journey.origin.name)
-                        .font(.system(size: 14, weight: .medium, design: .rounded))
-                        .lineLimit(1).minimumScaleFactor(0.8).help(journey.origin.name)
-                    Capsule().fill(Color(nsColor: .separatorColor).opacity(0.65))
-                        .frame(minWidth: 12, maxWidth: .infinity).frame(height: 2)
-                        .accessibilityHidden(true)
-                    Text("\(train.rideMinutes) MIN")
-                        .font(.system(size: 12, weight: .medium, design: .rounded))
-                        .foregroundStyle(.secondary).fixedSize()
-                    Capsule().fill(Color(nsColor: .separatorColor).opacity(0.65))
-                        .frame(minWidth: 12, maxWidth: .infinity).frame(height: 2)
-                        .accessibilityHidden(true)
-                    Text(journey.destination.name)
-                        .font(.system(size: 14, weight: .medium, design: .rounded))
-                        .lineLimit(1).minimumScaleFactor(0.8).help(journey.destination.name)
-                }
-                HStack(alignment: .top) {
-                    clock(train.boardingTime)
-                    Spacer()
-                    clock(train.destinationArrival)
-                }.padding(.top, 8)
-                HStack(alignment: .firstTextBaseline, spacing: 5) {
-                    Text(train.departure > now
-                         ? "LEAVES IN \(train.departureCountdownValue(at: now).uppercased())"
-                         : "LEAVING")
-                    Text("·").accessibilityHidden(true)
-                    Text(statusLabel)
-                        .foregroundStyle(statusColor)
-                    Spacer(minLength: 0)
-                }.font(.system(size: 12, weight: .medium, design: .rounded))
-                    .foregroundStyle(.secondary)
-                    .lineLimit(1).minimumScaleFactor(0.85)
-                    .padding(.top, 8)
-                    .accessibilityElement(children: .combine)
+            RouteLine(journey: journey, minutes: train.rideMinutes)
+            HStack(alignment: .top) {
+                ClockText(date: train.boardingTime)
+                Spacer()
+                ClockText(date: train.destinationArrival)
+            }.padding(.top, 8)
+            TrainStatusLine(train: train, now: now).padding(.top, 8)
         }
-    }
-
-    private func clock(_ date: Date) -> some View {
-        HStack(alignment: .firstTextBaseline, spacing: 3) {
-            Text(Pacific.format(date)).font(.system(size: 27, weight: .semibold, design: .rounded)).monospacedDigit()
-            Text(Pacific.format(date, "a")).font(.system(size: 12, weight: .medium, design: .rounded)).foregroundStyle(.secondary)
-        }.fixedSize()
-    }
-
-    private var statusLabel: String {
-        guard train.isLive else { return "SCHEDULED" }
-        guard let delay = train.boardingDelay else { return "LIVE PREDICTION" }
-        if delay == 0 { return "ON TIME" }
-        let minutes = abs(delay) < 60 ? "<1" : String(Int(ceil(Double(abs(delay)) / 60)))
-        if delay > 0 { return "LATE \(minutes == "<1" ? "" : "+")\(minutes) MIN" }
-        return "EARLY \(minutes) MIN"
-    }
-
-    private var statusColor: Color {
-        guard train.isLive, let delay = train.boardingDelay else { return .secondary }
-        if delay > 0 { return Color(red: 246.0 / 255, green: 73.0 / 255, blue: 50.0 / 255) }
-        if delay == 0 { return Color(red: 70.0 / 255, green: 161.0 / 255, blue: 113.0 / 255) }
-        return .secondary
     }
 }

@@ -32,6 +32,7 @@ let project = Project(
                 "Sources/Bart/Realtime.swift",
                 "Sources/Bart/BARTService.swift",
                 "Sources/Bart/SharedBoard.swift",
+                "Sources/Bart/TrainStyle.swift",
                 "WidgetExtension/BartWidget.swift",
             ],
             entitlements: .file(path: "Configuration/BartWidget.entitlements"),
